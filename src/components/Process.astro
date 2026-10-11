@@ -1,0 +1,42 @@
+---
+// Velune's own process, as set out in the showreel's "How we think" section.
+// It is a genuine sequence, so it is numbered.
+const steps = [
+  { name: 'Create', words: ['Idea', 'direction', 'concept'] },
+  { name: 'Capture', words: ['Camera', 'people', 'product', 'movement'] },
+  { name: 'Elevate', words: ['Edit', 'sound', 'colour', 'motion'] },
+];
+
+interface Props { headingLevel?: 'h2' | 'h3' }
+const { headingLevel: H = 'h3' } = Astro.props;
+---
+
+<ol class="process" role="list">
+  {steps.map((s, i) => (
+    <li class="step">
+      <span class="step-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+      <H class="step-name">{s.name}</H>
+      <p class="step-words">{s.words.join(', ')}.</p>
+    </li>
+  ))}
+</ol>
+
+<style>
+  .process { display: grid; }
+  .step {
+    display: grid;
+    grid-template-columns: 3rem 1fr;
+    gap: 0.25rem 1rem;
+    align-items: baseline;
+    padding-block: clamp(1.25rem, 2.5vw, 2rem);
+    border-top: 1px solid var(--stone);
+  }
+  .step:last-child { border-bottom: 1px solid var(--stone); }
+  .step-num { font-size: var(--t-small); color: var(--graphite); font-variant-numeric: tabular-nums; }
+  .step-name { font-family: var(--serif); font-weight: 400; font-size: clamp(2rem, 1.4rem + 2.4vw, 3.5rem); line-height: 1.05; letter-spacing: -0.015em; }
+  .step-words { grid-column: 2; color: var(--graphite); }
+  @media (min-width: 48em) {
+    .step { grid-template-columns: 4rem minmax(0, 1fr) minmax(0, 1fr); }
+    .step-words { grid-column: 3; }
+  }
+</style>

@@ -1,0 +1,77 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+import EnquiryForm from '../components/EnquiryForm.astro';
+import Faq from '../components/Faq.astro';
+import { site, whatsappLink } from '../data/site';
+---
+
+<Base
+  title="Start a project"
+  description="Start a project with Velune Creative Studio. Send an enquiry through WhatsApp or Instagram."
+  closing="none"
+>
+  <PageHead
+    line1="Let's talk"
+    line2="about your project."
+    intro="Tell Velune what you're making and roughly when you need it. Enquiries are handled on WhatsApp, so the form below prepares your message there."
+  />
+
+  <section class="wrap contact" id="enquiry" aria-label="Enquiry">
+    <div class="contact-side">
+      <div>
+        <h2 class="side-title">How it works</h2>
+        <ol class="how" role="list">
+          <li><span aria-hidden="true">01</span>Fill in the form.</li>
+          <li><span aria-hidden="true">02</span>WhatsApp opens with your message written out.</li>
+          <li><span aria-hidden="true">03</span>Press send. The conversation continues on WhatsApp.</li>
+        </ol>
+      </div>
+      <div>
+        <h2 class="side-title">Or contact Velune directly</h2>
+        <ul class="direct" role="list">
+          <li>
+            <span class="meta-key">WhatsApp</span>
+            <a href={whatsappLink()} target="_blank" rel="noopener">{site.whatsapp.display}</a>
+          </li>
+          <li>
+            <span class="meta-key">Instagram</span>
+            <a href={site.instagram.url} target="_blank" rel="noopener">{site.instagram.handle}</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="contact-form">
+      <EnquiryForm idPrefix="contact" />
+    </div>
+  </section>
+
+  <section class="band band--soft" aria-labelledby="faq-title">
+    <div class="wrap split">
+      <h2 id="faq-title" class="section-label">Common questions</h2>
+      <Faq />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .contact { display: grid; gap: 3rem; padding-bottom: var(--section); scroll-margin-top: 1rem; }
+  @media (min-width: 60em) {
+    .contact { grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 2rem; align-items: start; }
+    .contact-side { grid-column: 1 / span 4; }
+    .contact-form { grid-column: 6 / -1; }
+  }
+  .contact-side { display: grid; gap: 2.5rem; }
+  .side-title { font-size: 1.125rem; font-weight: 700; margin-bottom: 0.75rem; }
+  .how li {
+    display: grid;
+    grid-template-columns: 2.25rem 1fr;
+    padding-block: 0.75rem;
+    border-top: 1px solid var(--stone);
+  }
+  .how span { font-size: var(--t-small); color: var(--graphite); font-variant-numeric: tabular-nums; padding-top: 0.15rem; }
+  .direct { display: grid; gap: 1.25rem; }
+  .direct li { display: grid; gap: 0.2rem; }
+  .direct a { font-size: 1.375rem; text-underline-offset: 0.25em; text-decoration-color: var(--stone); }
+  .direct a:hover { text-decoration-color: currentColor; }
+</style>

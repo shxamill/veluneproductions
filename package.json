@@ -1,0 +1,20 @@
+{
+  "name": "velune-website",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "media": "bash scripts/prepare-media.sh",
+    "screenshot": "node scripts/screenshot.mjs"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dependencies": {
+    "astro": "^7.3.8"
+  }
+}

@@ -1,0 +1,137 @@
+---
+import { Picture, getImage } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import { projects, mediaSummary, type Project } from '../../data/work';
+
+export function getStaticPaths() {
+  return projects.map((project, i) => ({
+    params: { slug: project.slug },
+    props: { project, next: projects[(i + 1) % projects.length] },
+  }));
+}
+
+interface Props { project: Project; next: Project }
+const { project, next } = Astro.props;
+
+// Optimised poster frames for the videos (the poster attribute takes one URL).
+const media = await Promise.all(
+  project.media.map(async (m) =>
+    m.kind === 'video'
+      ? { ...m, posterSrc: (await getImage({ src: m.poster, width: m.landscape ? 1276 : 600, format: 'webp', quality: 70 })).src }
+      : m,
+  ),
+);
+const summary = mediaSummary(project);
+---
+
+<Base
+  title={`${project.client} — ${project.category}`}
+  description={`${project.client}: ${summary.toLowerCase()} by Velune Creative Studio. ${project.category}.`}
+>
+  <article>
+    <header class="wrap project-head">
+      <a class="back text-link" href="/work/">All work</a>
+      <h1 class="voice project-title">
+        <span class="rise">{project.client}</span>
+        <span class="voice-2 rise rise--2">{project.category}</span>
+      </h1>
+      <dl class="project-meta rise rise--3">
+        <div><dt class="meta-key">Client</dt><dd>{project.client}</dd></div>
+        <div><dt class="meta-key">Category</dt><dd>{project.category}</dd></div>
+        <div><dt class="meta-key">In this project</dt><dd>{summary}</dd></div>
+      </dl>
+      {project.about && <p class="lede">{project.about}</p>}
+    </header>
+
+    <div class="wrap gallery">
+      {media.map((m, i) =>
+        m.kind === 'photo' ? (
+          <figure class="frame item item--photo">
+            <Picture
+              src={m.image}
+              alt={m.alt}
+              formats={['avif', 'webp']}
+              widths={[400, 600, 800, 1000, 1350]}
+              sizes="(min-width: 60em) 46vw, 100vw"
+              loading={i === 0 ? 'eager' : 'lazy'}
+              fetchpriority={i === 0 ? 'high' : 'auto'}
+            />
+          </figure>
+        ) : (
+          <figure class:list={['item', 'item--video', { 'item--landscape': m.landscape }]}>
+            <div class="frame">
+              <video
+                controls
+                playsinline
+                preload="none"
+                poster={m.posterSrc}
+                width={m.landscape ? 1276 : 720}
+                height={m.landscape ? 718 : 1280}
+                aria-label={`${m.label} for ${project.client}, ${m.duration}`}
+              >
+                <source src={m.src} type="video/mp4" />
+                <p>Your browser can't play this video. <a href={m.src}>Download the {m.label.toLowerCase()}</a>.</p>
+              </video>
+            </div>
+            <figcaption>{m.label}, {m.duration}</figcaption>
+          </figure>
+        ),
+      )}
+    </div>
+
+    <nav class="inner next" aria-label="More work">
+      <a class="next-link" href={`/work/${next.slug}/`}>
+        <span class="meta-key">Next project</span>
+        <span class="next-name">{next.client}</span>
+      </a>
+      <a class="btn btn--line" href="/work/">All work</a>
+    </nav>
+  </article>
+</Base>
+
+<style>
+  .project-head {
+    display: grid;
+    gap: clamp(1.5rem, 3vw, 2.5rem);
+    padding-top: clamp(2rem, 1rem + 4vw, 5rem);
+    padding-bottom: clamp(2.5rem, 2rem + 3vw, 4.5rem);
+  }
+  .back { justify-self: start; display: inline-flex; min-height: 2.75rem; align-items: center; }
+  .project-title { font-size: clamp(2.75rem, 1.2rem + 6.2vw, 7rem); line-height: 0.95; letter-spacing: -0.04em; }
+  .project-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: 1.25rem 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--stone);
+    max-width: 52rem;
+  }
+  .project-meta dd { margin: 0.25rem 0 0; }
+
+  .gallery { display: grid; gap: clamp(1.5rem, 3vw, 2.5rem); padding-bottom: var(--section); }
+  @media (min-width: 48em) {
+    .gallery { grid-template-columns: 1fr 1fr; align-items: start; }
+    .gallery > :nth-child(4n + 2) { margin-top: clamp(3rem, 8vw, 8rem); }
+    .gallery > :nth-child(4n + 3) { margin-top: calc(-1 * clamp(1rem, 4vw, 4rem)); }
+    .item--landscape { grid-column: 1 / -1; }
+  }
+  .item { margin: 0; }
+  .item--photo :global(img) { width: 100%; height: auto; }
+  .item--video .frame { aspect-ratio: 9 / 16; }
+  .item--landscape .frame { aspect-ratio: 16 / 9; }
+  .item--video video { width: 100%; height: 100%; object-fit: cover; background: var(--charcoal); }
+  figcaption { margin-top: 0.75rem; font-size: var(--t-small); color: var(--graphite); }
+
+  .next {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1.5rem;
+    padding-block: 2.5rem var(--section);
+    border-top: 1px solid var(--stone);
+  }
+  .next-link { display: grid; gap: 0.4rem; text-decoration: none; }
+  .next-name { font-family: var(--serif); font-style: italic; font-size: clamp(2rem, 1.4rem + 2.4vw, 3.5rem); line-height: 1.05; }
+  .next-link:hover .next-name { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.12em; }
+</style>

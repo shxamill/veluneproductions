@@ -1,0 +1,147 @@
+---
+import { serviceGroups } from '../data/services';
+---
+
+<!--
+  Three group panels (reference: horizontal service cards, one expanded).
+  Each header is a disclosure button. Without JS every panel is expanded.
+  On wide screens exactly one panel is open at a time; on small screens they
+  stack and open independently.
+-->
+<div class="panels" data-panels>
+  {serviceGroups.map((group, i) => (
+    <section class="panel" aria-labelledby={`panel-${group.slug}-title`}>
+      <h3 class="panel-heading" id={`panel-${group.slug}-title`}>
+        <button
+          class="panel-button"
+          type="button"
+          aria-expanded="true"
+          aria-controls={`panel-${group.slug}-body`}
+          data-index={i}
+        >
+          <span class="panel-count">{group.services.length} services</span>
+          <span class="panel-name">{group.name}</span>
+          <svg class="panel-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M8 3v10" /></svg>
+        </button>
+      </h3>
+      <ul class="panel-list" role="list">
+        {group.services.map((s) => (
+          <li><a href={`/services/#${s.slug}`}>{s.name}</a></li>
+        ))}
+      </ul>
+      <div class="panel-body" id={`panel-${group.slug}-body`}>
+        <dl>
+          {group.services.map((s) => (
+            <div>
+              <dt>{s.name}</dt>
+              <dd>{s.summary}</dd>
+            </div>
+          ))}
+        </dl>
+        <a class="text-link" href={`/services/#${group.services[0].slug}`}>{group.name} services in detail</a>
+      </div>
+    </section>
+  ))}
+</div>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-panels]');
+  if (root) {
+    const panels = [...root.querySelectorAll<HTMLElement>('.panel')];
+    const buttons = panels.map((p) => p.querySelector<HTMLButtonElement>('.panel-button')!);
+    const wide = window.matchMedia('(min-width: 60em)');
+
+    const setOpen = (i: number, open: boolean) => {
+      panels[i].classList.toggle('is-open', open);
+      buttons[i].setAttribute('aria-expanded', String(open));
+      document.getElementById(buttons[i].getAttribute('aria-controls')!)!.hidden = !open;
+    };
+
+    const sync = () => {
+      const current = Math.max(0, panels.findIndex((p) => p.classList.contains('is-open')));
+      panels.forEach((_, i) => setOpen(i, i === current));
+    };
+
+    buttons.forEach((button, i) => {
+      button.addEventListener('click', () => {
+        const open = button.getAttribute('aria-expanded') === 'true';
+        if (wide.matches) {
+          if (!open) panels.forEach((_, j) => setOpen(j, j === i));
+        } else {
+          setOpen(i, !open);
+        }
+      });
+    });
+
+    root.classList.add('is-enhanced');
+    wide.addEventListener('change', sync);
+    sync();
+  }
+</script>
+
+<style>
+  .panels { display: grid; gap: 0.75rem; }
+  @media (min-width: 60em) {
+    .panels.is-enhanced { grid-template-columns: 1fr 1fr 1fr; align-items: stretch; }
+    .panels.is-enhanced .panel.is-open { grid-column: span 1; }
+    .panels.is-enhanced:has(.panel:nth-child(1).is-open) { grid-template-columns: 1.8fr 1fr 1fr; }
+    .panels.is-enhanced:has(.panel:nth-child(2).is-open) { grid-template-columns: 1fr 1.8fr 1fr; }
+    .panels.is-enhanced:has(.panel:nth-child(3).is-open) { grid-template-columns: 1fr 1fr 1.8fr; }
+  }
+
+  .panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    min-height: 100%;
+    padding: clamp(1.25rem, 2.5vw, 2rem);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--stone) 22%, var(--ivory));
+    transition: background-color 250ms var(--ease), color 250ms var(--ease);
+  }
+  @media (min-width: 60em) { .panel { min-height: 26rem; } }
+  .panel.is-open { background: var(--charcoal); color: var(--ivory); }
+
+  .panel-heading { font: inherit; }
+  .panel-button {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: 'count icon' 'name name';
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    text-align: left;
+    color: inherit;
+  }
+  .panel-count { grid-area: count; font-size: var(--t-small); color: var(--graphite); }
+  .panel.is-open .panel-count { color: var(--stone); }
+  .panel-name { grid-area: name; font-size: var(--t-h3); font-weight: 900; letter-spacing: -0.02em; line-height: 1.1; }
+  .panel-icon {
+    grid-area: icon;
+    width: 2.75rem; height: 2.75rem;
+    padding: 0.8rem;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    fill: none; stroke: currentColor; stroke-width: 1.4;
+    transition: transform 250ms var(--ease);
+  }
+  .panel.is-open .panel-icon { transform: rotate(45deg); }
+  @media (min-width: 60em) { .panels.is-enhanced .panel.is-open .panel-icon { visibility: hidden; } }
+
+  /* Collapsed: names only. Open: names with one-line descriptions. */
+  .panel-list { display: grid; gap: 0.35rem; margin-top: auto; }
+  .panel-list a { display: inline-block; padding-block: 0.3rem; text-decoration: none; }
+  .panel-list a:hover { text-decoration: underline; }
+  .panel.is-open .panel-list { display: none; }
+  .panel-body { display: grid; gap: 1.5rem; margin-top: auto; }
+  .panel-body[hidden] { display: none; }
+  .panel-body dl { display: grid; gap: 1rem; }
+  .panel-body dt { font-weight: 700; }
+  .panel-body dd { margin: 0; color: var(--graphite); font-size: var(--t-small); }
+  .panel.is-open .panel-body dd { color: var(--stone); }
+  .panel-body .text-link { justify-self: start; display: inline-flex; min-height: 2.75rem; align-items: center; }
+  .panels:not(.is-enhanced) .panel-list { display: none; }
+  .panels:not(.is-enhanced) .panel-icon { display: none; }
+</style>

@@ -1,0 +1,78 @@
+---
+import { whatsappLink } from '../data/site';
+
+// Every answer is drawn from the Velune Brand Book (pp.8, 9, 13–15, 17).
+// Don't add questions here unless Velune has confirmed the answer.
+const faqs = [
+  {
+    q: 'Do I have to book services together?',
+    a: 'No. Each service can be booked on its own, or several can be combined when the brief needs it.',
+  },
+  {
+    q: 'Which industries and places does Velune work with?',
+    a: "Velune doesn't limit its work to one industry or location. Logistics, language and production requirements can change how a particular project is delivered, so mention where you are when you get in touch.",
+  },
+  {
+    q: "What's included in social media handling?",
+    a: 'Planning, publishing, captions, asset organisation and profile consistency. Community replies, customer support, influencer coordination, crisis response and reporting are agreed for each engagement rather than included by default.',
+  },
+  {
+    q: 'Can you guarantee followers, reach or sales?',
+    a: "No. A strategy starts by defining the objective, then measures what can be assessed reliably. Velune doesn't promise follower growth, reach, leads or sales.",
+  },
+  {
+    q: 'What needs to be in place before running Meta Ads?',
+    a: 'Clear approvals, an agreed budget owner, access to the right accounts, and an agreed way of reporting results — all settled before a campaign launches.',
+  },
+];
+---
+
+<div class="faq">
+  {faqs.map((f) => (
+    <details class="faq-item">
+      <summary>
+        <span>{f.q}</span>
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6l4.5 4.5L12.5 6" /></svg>
+      </summary>
+      <p>{f.a}</p>
+    </details>
+  ))}
+  <details class="faq-item">
+    <summary>
+      <span>How do I start a project?</span>
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6l4.5 4.5L12.5 6" /></svg>
+    </summary>
+    <p>
+      Use the <a href="/contact/">enquiry form</a> or <a href={whatsappLink()} target="_blank" rel="noopener">message Velune on WhatsApp</a>.
+      Say what you're making, where it will be used, and roughly when you need it.
+    </p>
+  </details>
+</div>
+
+<style>
+  .faq { display: grid; gap: 0.75rem; }
+  .faq-item {
+    border: 1px solid color-mix(in srgb, var(--stone) 60%, transparent);
+    border-radius: 12px;
+    background: var(--soft);
+  }
+  .faq-item[open] { background: var(--charcoal); color: var(--ivory); border-color: var(--charcoal); }
+  summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    min-height: 3.5rem;
+    padding: 1rem 1.25rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary svg { flex: none; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.5; transition: transform 200ms var(--ease); }
+  .faq-item[open] summary svg { transform: rotate(180deg); }
+  summary:focus-visible { outline-offset: -4px; border-radius: 12px; }
+  .faq-item p { padding: 0 1.25rem 1.25rem; max-width: 62ch; color: var(--stone); }
+  .faq-item a { color: var(--ivory); }
+</style>

@@ -1,0 +1,57 @@
+---
+import { Picture } from 'astro:assets';
+import type { Project } from '../data/work';
+import { mediaSummary } from '../data/work';
+
+interface Props {
+  project: Project;
+  /** Wide cards take 7 of 12 columns; narrow ones 5. */
+  size?: 'wide' | 'narrow';
+  headingLevel?: 'h2' | 'h3';
+  /** Above-the-fold card: load eagerly with high priority (LCP candidate). */
+  priority?: boolean;
+}
+const { project, size = 'wide', headingLevel: H = 'h3', priority = false } = Astro.props;
+---
+
+<article class:list={['card', `card--${size}`]}>
+  <a class="card-link" href={`/work/${project.slug}/`} aria-label={`${project.client}, ${project.category}: ${mediaSummary(project)}`}>
+    <div class="frame card-media">
+      <Picture
+        src={project.cover}
+        alt={project.coverAlt}
+        formats={['avif', 'webp']}
+        widths={[400, 640, 800, 1000, 1200]}
+        priority={priority}
+        sizes={size === 'wide' ? '(min-width: 60em) 58vw, 100vw' : '(min-width: 60em) 41vw, 100vw'}
+      />
+    </div>
+    <div class="card-meta">
+      <H class="card-title">{project.client}</H>
+      <span class="chip">{project.category}</span>
+      <p class="card-sub">{mediaSummary(project)}</p>
+      <svg class="card-arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 11.5l7-7M5.5 4.5h6v6" /></svg>
+    </div>
+  </a>
+</article>
+
+<style>
+  .card-link { display: grid; gap: 1.25rem; text-decoration: none; }
+  .card-media { aspect-ratio: 4 / 5; }
+  .card--narrow .card-media { aspect-ratio: 3 / 4; }
+  .card-media :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
+
+  .card-meta {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    gap: 0.35rem 1rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--stone);
+  }
+  .card-title { font-size: var(--t-h3); font-weight: 900; letter-spacing: -0.02em; line-height: 1.1; }
+  .card-link:hover .card-title { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 0.15em; }
+  .chip { justify-self: end; }
+  .card-sub { font-size: var(--t-small); color: var(--graphite); }
+  .card-arrow { justify-self: end; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.4; }
+</style>

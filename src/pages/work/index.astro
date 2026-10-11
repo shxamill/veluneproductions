@@ -1,0 +1,35 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHead from '../../components/PageHead.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { projects } from '../../data/work';
+
+// Alternate wide/narrow per row: W N / N W / W N ...
+const sizeFor = (i: number) => ((Math.floor(i / 2) + i) % 2 === 0 ? 'wide' : 'narrow');
+---
+
+<Base
+  title="Selected work"
+  description="Selected photography and video by Velune for makeup artists, a luxury clothing label, a stylist and a kids' culture brand."
+>
+  <PageHead
+    line1="Selected work"
+    line2="for people and brands."
+    intro="Photography and short-form video made with makeup artists, a clothing label, a stylist and a kids' culture brand. Each project opens to the full set of stills and reels."
+  />
+
+  <section class="wrap work-list" aria-label="Projects">
+    {projects.map((p, i) => <ProjectCard project={p} size={sizeFor(i)} headingLevel="h2" priority={i === 0} />)}
+  </section>
+</Base>
+
+<style>
+  .work-list { display: grid; gap: clamp(3rem, 6vw, 5rem) 2rem; padding-bottom: var(--section); }
+  @media (min-width: 60em) {
+    .work-list { grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: start; }
+    .work-list > :global(.card--wide) { grid-column: span 7; }
+    .work-list > :global(.card--narrow) { grid-column: span 5; }
+    .work-list > :global(:nth-child(4n + 2)) { margin-top: clamp(4rem, 10vw, 9rem); }
+    .work-list > :global(:nth-child(4n + 3)) { margin-top: calc(-1 * clamp(2rem, 5vw, 4.5rem)); }
+  }
+</style>

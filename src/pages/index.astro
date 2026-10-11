@@ -1,0 +1,119 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import Process from '../components/Process.astro';
+import ServicePanels from '../components/ServicePanels.astro';
+import Faq from '../components/Faq.astro';
+import { featured, projects } from '../data/work';
+
+const [a, b, c, d] = featured;
+---
+
+<Base
+  description="Velune is a creative and digital studio for video production, photography, content creation, social media, branding and digital marketing."
+  organization
+  closing="form"
+>
+  <Hero />
+
+  <section class="band band--soft" aria-labelledby="studio-title">
+    <div class="wrap split">
+      <h2 id="studio-title" class="section-label">The studio</h2>
+      <div class="intro">
+        <p class="statement">Velune is a creative studio built for brands that want to be seen, remembered, and talked about.</p>
+        <p class="lede">
+          We bring together visual storytelling, content creation, video production and digital marketing to help brands
+          build a stronger presence in the digital world. From a single reel to a complete campaign, we turn ideas into
+          visuals that capture attention and give brands a distinct identity.
+        </p>
+        <a class="text-link" href="/studio/">More about the studio</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="work" aria-labelledby="work-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="work-title" class="voice">
+          <span>Selected work</span>
+          <span class="voice-2">for people and brands.</span>
+        </h2>
+        <a class="btn btn--dark" href="/work/">View all {projects.length} projects</a>
+      </div>
+      <div class="work-grid">
+        <ProjectCard project={a} size="wide" />
+        <ProjectCard project={b} size="narrow" />
+        <ProjectCard project={c} size="narrow" />
+        <ProjectCard project={d} size="wide" />
+      </div>
+    </div>
+  </section>
+
+  <section class="band band--soft" aria-labelledby="process-title">
+    <div class="wrap split">
+      <div class="process-side">
+        <h2 id="process-title" class="section-label">How we think</h2>
+        <a class="btn btn--dark" href="/contact/">Start a project</a>
+      </div>
+      <Process />
+    </div>
+  </section>
+
+  <section class="band" aria-labelledby="services-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="services-title" class="voice">
+          <span>Nine services,</span>
+          <span class="voice-2">booked alone or together.</span>
+        </h2>
+        <a class="btn btn--line" href="/services/">All services</a>
+      </div>
+      <ServicePanels />
+    </div>
+  </section>
+
+  <section class="band band--soft" aria-labelledby="faq-title">
+    <div class="wrap split">
+      <div class="faq-side">
+        <h2 id="faq-title" class="voice faq-title">
+          <span>Common questions,</span>
+          <span class="voice-2">answered plainly.</span>
+        </h2>
+      </div>
+      <Faq />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .intro { display: grid; gap: 1.75rem; justify-items: start; }
+
+  .section-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1.5rem 2rem;
+    margin-bottom: clamp(2.5rem, 5vw, 4.5rem);
+  }
+
+  .work-grid { display: grid; gap: clamp(3rem, 6vw, 5rem) 2rem; }
+  @media (min-width: 60em) {
+    .work-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: start; }
+    .work-grid > :global(.card--wide) { grid-column: span 7; }
+    .work-grid > :global(.card--narrow) { grid-column: span 5; }
+    /* Stagger the narrow column down, so the grid reads as an edit, not a table */
+    .work-grid > :global(:nth-child(2)) { margin-top: clamp(4rem, 10vw, 9rem); }
+  }
+
+  .process-side { display: grid; gap: 1.5rem; align-content: space-between; justify-items: start; }
+  @media (min-width: 60em) { .process-side { min-height: 100%; } }
+  @media (max-width: 59.99em) {
+    /* Label, then steps, then the button */
+    .process-side { display: contents; }
+    .process-side .btn { order: 2; justify-self: start; }
+  }
+
+  .faq-title { font-size: clamp(2rem, 1.3rem + 2.6vw, 3.5rem); }
+</style>

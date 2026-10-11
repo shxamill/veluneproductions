@@ -1,0 +1,103 @@
+---
+import { Picture } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+import Process from '../components/Process.astro';
+import { projects } from '../data/work';
+
+// Client roster as listed in Velune's own showreel and the brand book (p.16).
+const featuredNames = projects.map((p) => p.client);
+const others = ['Shruthi', 'Trisha', 'Greeshma Prasanna', 'Ashwini Gowda', 'Bhargavi Vikyathi', 'Vajraraj Jewellery', 'Al Mariyam', 'Harshitha', 'Avrathan', 'Monika Reddy'];
+const stilat = projects.find((p) => p.slug === 'stilat')!;
+const lakshi = projects.find((p) => p.slug === 'lakshi-lingaraju')!;
+---
+
+<Base
+  title="Studio"
+  description="Velune is a creative studio built for brands that want to be seen, remembered and talked about: visual storytelling, content, video production and digital marketing."
+>
+  <PageHead line1="The studio" line2="Ideas into visual presence." />
+
+  <section class="wrap story" aria-label="About Velune">
+    <div class="story-text">
+      <p class="statement">Velune is a creative studio built for brands that want to be seen, remembered, and talked about.</p>
+      <div class="prose lede">
+        <p>
+          We bring together visual storytelling, content creation, video production and digital marketing to help brands
+          build a stronger presence in the digital world. From a single reel to a complete campaign, we turn ideas into
+          visuals that capture attention and give brands a distinct identity.
+        </p>
+        <p>
+          Velune works with brands, businesses, products and people, across industries and without a geographic
+          restriction.
+        </p>
+      </div>
+      <blockquote class="belief">
+        <p>We believe great creative work isn't just about looking good. It's about making people stop, feel, and remember.</p>
+      </blockquote>
+    </div>
+    <div class="story-images">
+      <figure class="frame">
+        <Picture src={stilat.cover} alt={stilat.coverAlt} formats={['avif', 'webp']} widths={[400, 700, 1000]} sizes="(min-width: 60em) 28vw, 50vw" loading="eager" />
+      </figure>
+      <figure class="frame">
+        <Picture src={lakshi.cover} alt={lakshi.coverAlt} formats={['avif', 'webp']} widths={[400, 700, 1000]} sizes="(min-width: 60em) 28vw, 50vw" />
+      </figure>
+    </div>
+  </section>
+
+  <section class="band band--soft" aria-labelledby="think-title">
+    <div class="wrap split">
+      <h2 id="think-title" class="section-label">How we think</h2>
+      <Process />
+    </div>
+  </section>
+
+  <section class="band" aria-labelledby="clients-title">
+    <div class="wrap split">
+      <h2 id="clients-title" class="section-label">Clients</h2>
+      <div class="clients">
+        <p class="statement">People and brands Velune has worked with.</p>
+        <ul class="client-list" role="list">
+          {featuredNames.map((n) => <li><strong>{n}</strong></li>)}
+          {others.map((n) => <li>{n}</li>)}
+        </ul>
+        <a class="btn btn--dark" href="/work/">See selected work</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .story { display: grid; gap: 3rem; padding-bottom: var(--section); }
+  @media (min-width: 60em) {
+    .story { grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 2rem; align-items: start; }
+    .story-text { grid-column: 1 / span 6; }
+    .story-images { grid-column: 8 / -1; }
+  }
+  .story-text { display: grid; gap: 2rem; }
+  .belief {
+    margin: 0;
+    padding-left: 1.25rem;
+    border-left: 2px solid var(--charcoal);
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1.5rem;
+    line-height: 1.35;
+    max-width: 34ch;
+  }
+  .story-images { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .story-images .frame { margin: 0; aspect-ratio: 3 / 4; }
+  .story-images .frame:nth-child(2) { margin-top: 4rem; }
+  .story-images :global(img) { width: 100%; height: 100%; object-fit: cover; }
+
+  .clients { display: grid; gap: 2rem; justify-items: start; }
+  .client-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+    width: 100%;
+    border-top: 1px solid var(--stone);
+  }
+  .client-list li { padding-block: 0.9rem; border-bottom: 1px solid color-mix(in srgb, var(--stone) 55%, transparent); }
+  .client-list strong { font-weight: 700; }
+</style>

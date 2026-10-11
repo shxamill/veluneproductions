@@ -1,0 +1,131 @@
+---
+import { Image } from 'astro:assets';
+import logoLight from '../assets/brand/logo-light.png';
+import EnquiryForm from './EnquiryForm.astro';
+import { nav, site, whatsappLink } from '../data/site';
+
+interface Props {
+  /** What closes the page above the footer links. */
+  closing?: 'cta' | 'form' | 'none';
+}
+const { closing = 'cta' } = Astro.props;
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer on-dark">
+  {closing !== 'none' && (
+    <section class="wrap closing" aria-labelledby="closing-title">
+      <div class="closing-intro">
+        <h2 id="closing-title" class="voice">
+          <span>Have a project in mind?</span>
+          <span class="voice-2">Let's talk.</span>
+        </h2>
+        <div class="direct">
+          <a class="direct-link" href={whatsappLink()} target="_blank" rel="noopener">
+            <span class="meta-key">WhatsApp</span>
+            {site.whatsapp.display}
+          </a>
+          <a class="direct-link" href={site.instagram.url} target="_blank" rel="noopener">
+            <span class="meta-key">Instagram</span>
+            {site.instagram.handle}
+          </a>
+        </div>
+      </div>
+      {closing === 'form' ? (
+        <div class="closing-form">
+          <EnquiryForm idPrefix="footer" tone="dark" />
+        </div>
+      ) : (
+        <div class="closing-cta">
+          <p class="lede">Tell Velune what you're making and roughly when. Enquiries are handled on WhatsApp.</p>
+          <div class="cta-row">
+            <a class="btn btn--light" href="/contact/">Start a project</a>
+            <a class="btn btn--line" href={whatsappLink()} target="_blank" rel="noopener">Message on WhatsApp</a>
+          </div>
+        </div>
+      )}
+    </section>
+  )}
+
+  <div class="inner footer-links">
+    <nav aria-label="Footer">
+      <ul role="list">
+        {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+        <li><a href="/contact/">Contact</a></li>
+      </ul>
+    </nav>
+    <p class="tagline">{site.tagline}</p>
+  </div>
+
+  <div class="inner legal">
+    <p>© {year} Velune Creative Studio</p>
+  </div>
+
+  <div class="wrap giant" aria-hidden="true">
+    <Image src={logoLight} alt="" widths={[640, 1280, 1820]} sizes="(min-width: 80em) 1280px, 100vw" />
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--charcoal);
+    color: var(--ivory);
+    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+    overflow: hidden;
+  }
+
+  .closing {
+    display: grid;
+    gap: 3rem;
+    padding-block: var(--section) calc(var(--section) * 0.8);
+  }
+  @media (min-width: 60em) {
+    .closing { grid-template-columns: 5fr 7fr; gap: 4rem; align-items: start; }
+  }
+  .closing-intro { display: grid; gap: 2.5rem; align-content: start; }
+  .direct { display: grid; gap: 1.25rem; }
+  .direct-link {
+    display: inline-grid;
+    gap: 0.25rem;
+    width: fit-content;
+    font-size: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+    text-decoration: none;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--graphite);
+  }
+  .direct-link:hover { border-bottom-color: var(--ivory); }
+  .closing-cta { display: grid; gap: 2rem; align-content: start; }
+  .closing-cta .lede { color: var(--stone); }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+
+  .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1.5rem;
+    padding-block: 2rem;
+    border-top: 1px solid #2e2c29;
+  }
+  .footer-links ul { display: flex; flex-wrap: wrap; gap: 0.25rem 2rem; }
+  .footer-links a {
+    display: inline-block;
+    padding-block: 0.5rem;
+    text-decoration: none;
+    color: var(--stone);
+  }
+  .footer-links a:hover { color: var(--ivory); text-decoration: underline; }
+  .tagline { font-family: var(--serif); font-style: italic; font-size: 1.25rem; color: var(--stone); }
+
+  .legal {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: var(--t-small);
+    color: var(--stone);
+  }
+
+  /* One bold move: the real wordmark at full width, closing every page */
+  .giant { padding-block: clamp(2rem, 6vw, 5rem) clamp(1.5rem, 4vw, 3rem); }
+  .giant img { width: 100%; height: auto; opacity: 0.14; }
+</style>

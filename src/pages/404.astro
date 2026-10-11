@@ -1,0 +1,21 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+---
+
+<Base title="Page not found" description="This page doesn't exist on the Velune website.">
+  <PageHead
+    line1="Page not found."
+    line2="The frame is empty."
+    intro="The address may be mistyped, or the page may have moved. Try the selected work, or start from the home page."
+  >
+    <div class="actions">
+      <a class="btn btn--dark" href="/work/">See selected work</a>
+      <a class="btn btn--line" href="/">Go to the home page</a>
+    </div>
+  </PageHead>
+</Base>
+
+<style>
+  .actions { display: flex; flex-wrap: wrap; gap: 0.75rem; padding-bottom: var(--section); }
+</style>

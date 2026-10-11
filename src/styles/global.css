@@ -1,0 +1,240 @@
+/* Velune — design tokens and base styles.
+   Palette: Velune Brand Book v1 p.20. Contrast measured (WCAG 2.2):
+   charcoal/ivory 16.2:1 · graphite/ivory 6.5:1 · stone/charcoal 7.1:1.
+   Stone fails on light backgrounds (2.3:1) — use it for text on dark only. */
+
+:root {
+  --charcoal: #141414;
+  --ivory: #f5f0e8;
+  --soft: #fbfaf7;
+  --stone: #a89f94;
+  --graphite: #5a554e;
+
+  --sans: var(--font-sans), 'Lato', system-ui, sans-serif;
+  --serif: var(--font-serif), 'EB Garamond', Georgia, serif;
+
+  /* Fluid type scale */
+  --t-hero: clamp(3.1rem, 1.2rem + 8.4vw, 9rem);
+  --t-h2: clamp(2.25rem, 1.3rem + 3.6vw, 4.5rem);
+  --t-h3: clamp(1.5rem, 1.2rem + 1.1vw, 2.125rem);
+  --t-statement: clamp(1.5rem, 1.1rem + 1.6vw, 2.5rem);
+  --t-body: 1.0625rem;
+  --t-small: 0.9375rem;
+  --t-meta: 0.75rem;
+
+  --gutter: 1rem;
+  --max: 80rem;
+  --section: clamp(5rem, 3rem + 7vw, 10rem);
+  --radius-media: 8px;
+  --radius-panel: 20px;
+
+  --header-h: 4.5rem;
+  --ease: cubic-bezier(0.2, 0.7, 0.1, 1);
+
+  color-scheme: light;
+}
+
+@media (min-width: 48em) { :root { --gutter: 2rem; } }
+@media (min-width: 75em) { :root { --gutter: 3rem; --header-h: 5.5rem; } }
+
+/* Reset */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: 1rem;
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body {
+  min-height: 100svh;
+  background: var(--ivory);
+  color: var(--charcoal);
+  font-family: var(--sans);
+  font-size: var(--t-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+img, picture, video, svg { display: block; max-width: 100%; }
+img, video { height: auto; }
+input, button, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+p, h1, h2, h3, h4 { overflow-wrap: break-word; }
+ul[role='list'], ol[role='list'] { list-style: none; padding: 0; }
+
+:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--gutter);
+  top: 0.75rem;
+  z-index: 100;
+  padding: 0.75rem 1.25rem;
+  background: var(--charcoal);
+  color: var(--ivory);
+  border-radius: 999px;
+  transform: translateY(-200%);
+}
+.skip-link:focus { transform: none; }
+
+/* Layout */
+.wrap {
+  width: 100%;
+  max-width: calc(var(--max) + 2 * var(--gutter));
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+.band { padding-block: var(--section); }
+/* Content-width block without side padding — for rows that carry a border,
+   so the rule aligns with the content instead of running into the gutter. */
+.inner { width: min(var(--max), 100% - 2 * var(--gutter)); margin-inline: auto; }
+.band--soft { background: var(--soft); }
+.band--dark { background: var(--charcoal); color: var(--ivory); }
+
+/* Label / content split used across sections (reference: left micro-label, right content) */
+.split { display: grid; gap: 1.5rem 2rem; }
+@media (min-width: 60em) {
+  .split { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+  .split > :first-child { grid-column: 1 / span 4; }
+  .split > :last-child { grid-column: 5 / -1; }
+}
+
+/* Type */
+/* The two-voice heading: upright Lato Black + EB Garamond italic.
+   This is the site's one typographic signature; don't use it decoratively. */
+.voice {
+  font-weight: 900;
+  font-size: var(--t-h2);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+.voice > span { display: block; }
+.voice .voice-2 {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.04;
+  color: var(--graphite);
+}
+.band--dark .voice .voice-2,
+.on-dark .voice-2 { color: var(--stone); }
+
+.statement {
+  font-family: var(--serif);
+  font-size: var(--t-statement);
+  line-height: 1.22;
+  letter-spacing: -0.01em;
+  max-width: 30ch;
+  text-wrap: pretty;
+}
+.lede { font-size: 1.1875rem; line-height: 1.6; max-width: 60ch; color: var(--graphite); }
+.prose { max-width: 64ch; }
+.prose > * + * { margin-top: 1em; }
+.muted { color: var(--graphite); }
+.band--dark .muted, .on-dark .muted { color: var(--stone); }
+
+/* Metadata keys — brand book: small tracked uppercase for navigation/metadata only */
+.meta-key {
+  display: block;
+  font-size: var(--t-meta);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--graphite);
+}
+.band--dark .meta-key, .on-dark .meta-key { color: var(--stone); }
+.section-label {
+  font-size: var(--t-small);
+  color: var(--graphite);
+}
+.band--dark .section-label, .on-dark .section-label { color: var(--stone); }
+
+/* Buttons — pills, as in the reference */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6em;
+  min-height: 3rem;
+  padding: 0.7rem 1.5rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: var(--t-small);
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 160ms var(--ease), color 160ms var(--ease), border-color 160ms var(--ease);
+}
+.btn--dark { background: var(--charcoal); color: var(--ivory); }
+.btn--dark:hover { background: #2c2a27; }
+.btn--light { background: var(--soft); color: var(--charcoal); }
+.btn--light:hover { background: var(--ivory); }
+.btn--line { border-color: currentColor; }
+.btn--line:hover { background: var(--charcoal); color: var(--ivory); border-color: var(--charcoal); }
+.band--dark .btn--line:hover, .on-dark .btn--line:hover { background: var(--ivory); color: var(--charcoal); border-color: var(--ivory); }
+.btn svg { width: 1em; height: 1em; flex: none; }
+
+.text-link {
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--stone);
+  text-underline-offset: 0.35em;
+}
+.text-link:hover { text-decoration-color: currentColor; }
+
+/* Chips (project category) */
+.chip {
+  display: inline-block;
+  padding: 0.25rem 0.7rem;
+  border: 1px solid var(--stone);
+  border-radius: 999px;
+  font-size: var(--t-meta);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--graphite);
+  white-space: nowrap;
+}
+
+/* Media frames */
+.frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-media);
+  background: #1d1c1a;
+}
+.frame > picture { width: 100%; height: 100%; }
+.frame img, .frame video { width: 100%; height: 100%; object-fit: cover; }
+
+/* Load moment — one orchestrated entrance, hero only */
+@media (prefers-reduced-motion: no-preference) {
+  .rise { animation: rise 700ms var(--ease) both; }
+  .rise--2 { animation-delay: 90ms; }
+  .rise--3 { animation-delay: 200ms; }
+  @keyframes rise { from { opacity: 0; transform: translateY(0.35em); } }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

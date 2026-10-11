@@ -1,0 +1,155 @@
+---
+import { Image } from 'astro:assets';
+import logoDark from '../assets/brand/logo-dark.png';
+import { nav } from '../data/site';
+
+const path = Astro.url.pathname;
+const isCurrent = (href: string) => path === href || path.startsWith(href);
+---
+
+<header class="site-header">
+  <div class="wrap bar">
+    <a class="logo" href="/" aria-label="Velune, home">
+      <Image src={logoDark} alt="" widths={[160, 320]} sizes="80px" loading="eager" />
+    </a>
+
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" hidden>
+      <span class="menu-label">Menu</span>
+      <span class="menu-icon" aria-hidden="true"></span>
+    </button>
+
+    <nav id="site-nav" class="site-nav" aria-label="Main">
+      <ul role="list">
+        {nav.map((item) => (
+          <li>
+            <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>{item.label}</a>
+          </li>
+        ))}
+      </ul>
+      <a class="btn btn--dark" href="/contact/" aria-current={isCurrent('/contact/') ? 'page' : undefined}>Let's talk</a>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
+  const navEl = document.getElementById('site-nav');
+  if (toggle && navEl) {
+    const mq = window.matchMedia('(max-width: 47.99em)');
+    const set = (open: boolean) => {
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.querySelector('.menu-label')!.textContent = open ? 'Close' : 'Menu';
+      navEl.classList.toggle('is-open', open);
+      document.body.classList.toggle('menu-open', open);
+    };
+    const sync = () => {
+      // The toggle only exists on small screens; without JS the links stay visible.
+      toggle.hidden = !mq.matches;
+      navEl.classList.toggle('is-collapsible', mq.matches);
+      if (!mq.matches) set(false);
+    };
+    toggle.addEventListener('click', () => set(toggle.getAttribute('aria-expanded') !== 'true'));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+        set(false);
+        toggle.focus();
+      }
+    });
+    navEl.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('a')) set(false);
+    });
+    mq.addEventListener('change', sync);
+    sync();
+  }
+</script>
+
+<style>
+  .site-header { position: relative; z-index: 20; }
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: var(--header-h);
+    padding-block: 0.75rem;
+  }
+
+  /* Outlined pill around the wordmark (reference) — also gives the logo its clear space */
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.7rem 1.1rem;
+    border: 1px solid var(--stone);
+    border-radius: 999px;
+    min-height: 2.75rem;
+  }
+  .logo img { width: 80px; height: auto; }
+
+  .site-nav { display: flex; align-items: center; gap: clamp(1rem, 3vw, 2.75rem); }
+  .site-nav ul { display: flex; gap: clamp(1rem, 3vw, 2.75rem); }
+  .site-nav ul a {
+    display: inline-block;
+    padding-block: 0.6rem;
+    font-size: var(--t-small);
+    text-decoration: none;
+  }
+  .site-nav ul a:hover { text-decoration: underline; }
+  .site-nav ul a[aria-current='page'] {
+    text-decoration: underline;
+    text-decoration-color: var(--stone);
+    text-underline-offset: 0.4em;
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 1.1rem;
+    border: 1px solid var(--charcoal);
+    border-radius: 999px;
+    background: transparent;
+    font-weight: 700;
+    font-size: var(--t-small);
+  }
+  .menu-toggle[hidden] { display: none; }
+  .menu-icon, .menu-icon::before {
+    display: block;
+    width: 14px;
+    height: 1.5px;
+    background: currentColor;
+    transition: transform 200ms var(--ease);
+  }
+  .menu-icon { position: relative; transform: translateY(-3px); }
+  .menu-icon::before { content: ''; position: absolute; top: 6px; }
+  [aria-expanded='true'] .menu-icon { transform: rotate(45deg); }
+  [aria-expanded='true'] .menu-icon::before { transform: translateY(-6px) rotate(-90deg); }
+
+  /* Small screens: wrapped links without JS; full-width panel with JS */
+  @media (max-width: 47.99em) {
+    .bar { flex-wrap: wrap; }
+    .site-nav { flex-wrap: wrap; width: 100%; justify-content: space-between; }
+    .site-nav.is-collapsible {
+      display: none;
+      position: absolute;
+      inset: 100% 0 auto 0;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      padding: 0.5rem var(--gutter) 1.5rem;
+      background: var(--ivory);
+      border-bottom: 1px solid var(--stone);
+    }
+    .site-nav.is-collapsible.is-open { display: flex; }
+    .site-nav.is-collapsible ul { flex-direction: column; gap: 0; }
+    .site-nav.is-collapsible ul a {
+      display: block;
+      padding: 0.9rem 0;
+      font-family: var(--serif);
+      font-size: 1.75rem;
+      line-height: 1.2;
+      border-bottom: 1px solid color-mix(in srgb, var(--stone) 50%, transparent);
+    }
+    .site-nav.is-collapsible .btn { margin-top: 1.25rem; }
+  }
+</style>

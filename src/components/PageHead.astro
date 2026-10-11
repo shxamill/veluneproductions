@@ -1,0 +1,28 @@
+---
+// Shared page opening: two-voice H1 plus optional intro.
+interface Props {
+  line1: string;
+  line2: string;
+  intro?: string;
+}
+const { line1, line2, intro } = Astro.props;
+---
+
+<header class="page-head wrap">
+  <h1 class="voice page-title">
+    <span class="rise">{line1}</span>
+    <span class="voice-2 rise rise--2">{line2}</span>
+  </h1>
+  {intro && <p class="lede rise rise--3">{intro}</p>}
+  <slot />
+</header>
+
+<style>
+  .page-head {
+    display: grid;
+    gap: clamp(1.5rem, 3vw, 2.5rem);
+    padding-top: clamp(2.5rem, 1rem + 5vw, 6.5rem);
+    padding-bottom: clamp(3rem, 2rem + 4vw, 6rem);
+  }
+  .page-title { font-size: clamp(2.75rem, 1.2rem + 6.2vw, 7rem); line-height: 0.95; letter-spacing: -0.04em; }
+</style>

@@ -1,0 +1,77 @@
+---
+import { Font } from 'astro:assets';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../data/site';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Adds Organization structured data (home page only). */
+  organization?: boolean;
+  /** Closing block above the footer links: short CTA, full enquiry form, or nothing. */
+  closing?: 'cta' | 'form' | 'none';
+}
+
+const { title, description = site.description, organization = false, closing = 'cta' } = Astro.props;
+const fullTitle = title ? `${title} | Velune Creative Studio` : 'Velune Creative Studio | Create. Capture. Elevate.';
+
+// Absolute URLs need a confirmed production domain (astro.config `site`).
+// Until then canonical and og:image/og:url are omitted rather than guessed.
+const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
+const ogImage = Astro.site ? new URL('/og.jpg', Astro.site).href : undefined;
+
+const orgJson = organization
+  ? JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: site.name,
+      alternateName: 'Velune Creative Studio',
+      description: site.description,
+      sameAs: [site.instagram.url],
+      contactPoint: {
+        '@type': 'ContactPoint',
+        contactType: 'customer enquiries',
+        telephone: `+${site.whatsapp.number}`,
+      },
+      ...(Astro.site ? { url: Astro.site.href, logo: new URL('/apple-touch-icon.png', Astro.site).href } : {}),
+    })
+  : null;
+---
+
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {canonical && <link rel="canonical" href={canonical} />}
+    <meta name="theme-color" content="#F5F0E8" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Velune Creative Studio" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <Font cssVariable="--font-sans" preload={[{ weight: '900' }]} />
+    <Font cssVariable="--font-serif" preload={[{ style: 'italic' }]} />
+
+    {orgJson && <script type="application/ld+json" set:html={orgJson} />}
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer closing={closing} />
+  </body>
+</html>
