@@ -1,0 +1,10 @@
+# Not needed to build or serve the site; keeps uploads small and keeps the
+# internal brand book and raw client files out of deployments.
+brand_assets/
+temporary screenshots/
+docs/
+dist/
+node_modules/
+.astro/
+.env*
+CLAUDE.md
