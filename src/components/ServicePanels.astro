@@ -62,6 +62,19 @@ import { serviceGroups } from '../data/services';
       panels.forEach((_, i) => setOpen(i, i === current));
     };
 
+    // Wide screens with a mouse: resting on a panel opens it. A short delay
+    // keeps panels from flicking open as the pointer passes across them.
+    const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+    let hoverTimer = 0;
+    panels.forEach((panel, i) => {
+      panel.addEventListener('pointerenter', () => {
+        if (!wide.matches || !fine.matches || panel.classList.contains('is-open')) return;
+        clearTimeout(hoverTimer);
+        hoverTimer = window.setTimeout(() => panels.forEach((_, j) => setOpen(j, j === i)), 70);
+      });
+      panel.addEventListener('pointerleave', () => clearTimeout(hoverTimer));
+    });
+
     buttons.forEach((button, i) => {
       button.addEventListener('click', () => {
         const open = button.getAttribute('aria-expanded') === 'true';
@@ -80,9 +93,24 @@ import { serviceGroups } from '../data/services';
 </script>
 
 <style>
-  .panels { display: grid; gap: 0.75rem; }
+  .panels { --gap: 0.75rem; --pad: clamp(1.25rem, 2.5vw, 2rem); display: grid; gap: var(--gap); }
   @media (min-width: 60em) {
-    .panels.is-enhanced { grid-template-columns: 1fr 1fr 1fr; align-items: stretch; }
+    /* Wide screens: only the boxes change width. Their contents are laid out
+       at a fixed width (the closed column for names and lists, the open
+       column for details), so no text rewraps while the columns move; the
+       growing box simply uncovers its details. */
+    .panels.is-enhanced {
+      --closed: calc((100cqw - 2 * var(--gap)) / 3.8);
+      --open: calc(var(--closed) * 1.8);
+      container-type: inline-size;
+      grid-template-columns: 1fr 1fr 1fr;
+      align-items: stretch;
+      transition: grid-template-columns 520ms cubic-bezier(0.32, 0.72, 0, 1);
+    }
+    .panels.is-enhanced .panel { overflow: hidden; }
+    .panels.is-enhanced .panel-heading,
+    .panels.is-enhanced .panel-list { width: calc(var(--closed) - 2 * var(--pad)); flex-shrink: 0; }
+    .panels.is-enhanced .panel-body { width: calc(var(--open) - 2 * var(--pad)); flex-shrink: 0; }
     .panels.is-enhanced .panel.is-open { grid-column: span 1; }
     .panels.is-enhanced:has(.panel:nth-child(1).is-open) { grid-template-columns: 1.8fr 1fr 1fr; }
     .panels.is-enhanced:has(.panel:nth-child(2).is-open) { grid-template-columns: 1fr 1.8fr 1fr; }
@@ -94,12 +122,14 @@ import { serviceGroups } from '../data/services';
     flex-direction: column;
     gap: 1.25rem;
     min-height: 100%;
-    padding: clamp(1.25rem, 2.5vw, 2rem);
+    padding: var(--pad);
     border-radius: 14px;
     background: color-mix(in srgb, var(--stone) 22%, var(--ivory));
-    transition: background-color 250ms var(--ease), color 250ms var(--ease);
+    transition: background-color 320ms ease, color 320ms ease;
   }
-  @media (min-width: 60em) { .panel { min-height: 26rem; } }
+  /* Tall enough for the longest open panel at the narrowest wide width, so the
+     section never changes height when a different panel opens */
+  @media (min-width: 60em) { .panel { min-height: 30rem; } }
   .panel.is-open { background: var(--charcoal); color: var(--ivory); }
 
   .panel-heading { font: inherit; }
@@ -115,7 +145,7 @@ import { serviceGroups } from '../data/services';
     text-align: left;
     color: inherit;
   }
-  .panel-count { grid-area: count; font-size: var(--t-small); color: var(--graphite); }
+  .panel-count { grid-area: count; font-size: var(--t-small); color: var(--graphite); transition: color 320ms ease; }
   .panel.is-open .panel-count { color: var(--stone); }
   .panel-name { grid-area: name; font-size: var(--t-h3); font-weight: 900; letter-spacing: -0.02em; line-height: 1.1; }
   .panel-icon {
@@ -137,6 +167,12 @@ import { serviceGroups } from '../data/services';
   .panel.is-open .panel-list { display: none; }
   .panel-body { display: grid; gap: 1.5rem; margin-top: auto; }
   .panel-body[hidden] { display: none; }
+  /* Whichever block appears fades in as the boxes move */
+  @media (prefers-reduced-motion: no-preference) {
+    .panels.is-enhanced .panel.is-open .panel-body,
+    .panels.is-enhanced .panel:not(.is-open) .panel-list { animation: panel-in 380ms 60ms ease both; }
+    @keyframes panel-in { from { opacity: 0; } }
+  }
   .panel-body dl { display: grid; gap: 1rem; }
   .panel-body dt { font-weight: 700; }
   .panel-body dd { margin: 0; color: var(--graphite); font-size: var(--t-small); }

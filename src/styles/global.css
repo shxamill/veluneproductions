@@ -7,6 +7,9 @@
   --charcoal: #141414;
   --ivory: #f5f0e8;
   --soft: #fbfaf7;
+  /* Page background. White by the client's request (Oct 2026); the brand
+     ivory now marks the alternating bands instead. */
+  --paper: #ffffff;
   --stone: #a89f94;
   --graphite: #5a554e;
 
@@ -23,8 +26,8 @@
   --t-meta: 0.75rem;
 
   --gutter: 1rem;
-  --max: 80rem;
-  --section: clamp(5rem, 3rem + 7vw, 10rem);
+  --max: 90rem;
+  --section: clamp(4rem, 2.5rem + 4.5vw, 7.5rem);
   --radius-media: 8px;
   --radius-panel: 20px;
 
@@ -48,7 +51,7 @@ html {
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 body {
   min-height: 100svh;
-  background: var(--ivory);
+  background: var(--paper);
   color: var(--charcoal);
   font-family: var(--sans);
   font-size: var(--t-body);
@@ -102,7 +105,7 @@ ul[role='list'], ol[role='list'] { list-style: none; padding: 0; }
 /* Content-width block without side padding — for rows that carry a border,
    so the rule aligns with the content instead of running into the gutter. */
 .inner { width: min(var(--max), 100% - 2 * var(--gutter)); margin-inline: auto; }
-.band--soft { background: var(--soft); }
+.band--soft { background: var(--ivory); }
 .band--dark { background: var(--charcoal); color: var(--ivory); }
 
 /* Label / content split used across sections (reference: left micro-label, right content) */

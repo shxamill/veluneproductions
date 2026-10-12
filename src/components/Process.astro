@@ -1,11 +1,7 @@
 ---
-// Velune's own process, as set out in the showreel's "How we think" section.
-// It is a genuine sequence, so it is numbered.
-const steps = [
-  { name: 'Create', words: ['Idea', 'direction', 'concept'] },
-  { name: 'Capture', words: ['Camera', 'people', 'product', 'movement'] },
-  { name: 'Elevate', words: ['Edit', 'sound', 'colour', 'motion'] },
-];
+// Velune's own process (src/data/process.ts). It is a genuine sequence, so it
+// is numbered. The home page uses ProcessShowcase, which adds the stills.
+import { processSteps as steps } from '../data/process';
 
 interface Props { headingLevel?: 'h2' | 'h3' }
 const { headingLevel: H = 'h3' } = Astro.props;

@@ -1,0 +1,108 @@
+---
+import { projects } from '../data/work';
+import { otherClients } from '../data/clients';
+
+// Two lines of client names drifting in opposite directions, set in the
+// site's two voices: Lato Black above, EB Garamond italic below.
+// Each line is printed twice so the loop is seamless; the moving copy is
+// decorative (aria-hidden), and a plain list carries the roster for screen
+// readers. Names with a project page link to it for pointer users; hovering
+// a line pauses it. Reduced motion: the names sit still and wrap.
+type Name = { name: string; href?: string };
+const featured: Name[] = projects.map((p) => ({ name: p.client, href: `/work/${p.slug}/` }));
+const others: Name[] = otherClients.map((name) => ({ name }));
+
+// Spread the linked clients across both lines rather than bunching them.
+const interleave = (a: Name[], b: Name[]) => {
+  const out: Name[] = [];
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    if (a[i]) out.push(a[i]);
+    if (b[i]) out.push(b[i]);
+  }
+  return out;
+};
+const half = Math.ceil(featured.length / 2);
+const lines = [
+  interleave(featured.slice(0, half), others.slice(0, 5)),
+  interleave(featured.slice(half), others.slice(5)),
+];
+---
+
+<div class="marquee">
+  <ul class="visually-hidden">
+    {[...featured, ...others].map((c) => <li>{c.name}</li>)}
+  </ul>
+  {lines.map((line, i) => (
+    <div class:list={['line', i === 0 ? 'line--a' : 'line--b']} aria-hidden="true">
+      <div class="track">
+        {[0, 1].map((copy) => (
+          <ul class="names" role="list" data-copy={copy}>
+            {line.map((c) => (
+              <li>{c.href ? <a href={c.href} tabindex="-1">{c.name}</a> : c.name}</li>
+            ))}
+          </ul>
+        ))}
+      </div>
+    </div>
+  ))}
+</div>
+
+<style>
+  .marquee {
+    display: grid;
+    border-block: 1px solid var(--stone);
+    overflow: hidden;
+  }
+  .line { overflow: hidden; padding-block: clamp(0.9rem, 2vw, 1.75rem); }
+  .line--a { border-bottom: 1px solid color-mix(in srgb, var(--stone) 55%, transparent); }
+
+  .track { display: flex; width: max-content; }
+  .names { display: flex; align-items: baseline; }
+  .names li { display: flex; align-items: center; white-space: nowrap; }
+  /* A small ring between names */
+  .names li::after {
+    content: '';
+    width: 0.16em;
+    height: 0.16em;
+    margin-inline: 0.55em;
+    border: 1.5px solid currentColor;
+    border-radius: 50%;
+    opacity: 0.5;
+  }
+  .names a { text-decoration: none; }
+  .names a:hover { text-decoration: underline; text-decoration-thickness: 0.06em; text-underline-offset: 0.12em; }
+
+  .line--a .names {
+    font-weight: 900;
+    font-size: clamp(2.25rem, 1.2rem + 4.2vw, 5.25rem);
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+  }
+  .line--b .names {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: clamp(2.5rem, 1.3rem + 4.6vw, 5.75rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--graphite);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* Two copies side by side: moving by half the track lands exactly where it began */
+    .track { animation: drift 55s linear infinite; }
+    .line--b .track { animation-direction: reverse; animation-duration: 62s; }
+    @keyframes drift { to { transform: translateX(-50%); } }
+    @media (hover: hover) and (pointer: fine) {
+      .line:hover .track { animation-play-state: paused; }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .track { display: block; width: auto; padding-inline: var(--gutter); }
+    .names { display: block; }
+    .names li { display: inline; }
+    .names li::after { display: inline-block; vertical-align: middle; }
+    .names li:last-child::after { content: none; }
+    .names[data-copy='1'] { display: none; }
+  }
+</style>

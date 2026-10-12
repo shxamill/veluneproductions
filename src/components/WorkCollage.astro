@@ -1,0 +1,219 @@
+---
+import { Picture, getImage } from 'astro:assets';
+import type { Project } from '../data/work';
+
+// One client on the work page: a header row (number, category, name, what the
+// set contains) over a staggered collage of every photograph and reel.
+// Four-piece sets cycle through four arrangements so consecutive clients
+// don't repeat; two-piece and single-film sets have their own.
+// Reels play silently while on screen and pause when they leave it. Each has
+// its own pause button. Under reduced motion or Save-Data nothing plays until
+// the visitor presses play, and no video is fetched before then.
+interface Props { project: Project; index: number; eager?: boolean }
+const { project, index, eager = false } = Astro.props;
+
+const layout = project.media.length === 1 ? 'single' : project.media.length === 2 ? 'pair' : ['a', 'b', 'c', 'd'][index % 4];
+
+const tiles = await Promise.all(
+  project.media.map(async (m) =>
+    m.kind === 'video'
+      ? { ...m, posterSrc: (await getImage({ src: m.poster, width: m.landscape ? 1276 : 600, format: 'webp', quality: 70 })).src }
+      : m,
+  ),
+);
+
+// What the set actually contains, in the reference's tag row.
+const tags = [
+  project.media.some((m) => m.kind === 'photo') && 'Photography',
+  project.media.some((m) => m.kind === 'video' && m.label === 'Reel') && 'Reels',
+  project.media.some((m) => m.kind === 'video' && m.label === 'Film') && 'Film',
+].filter(Boolean) as string[];
+const titleId = `client-${project.slug}`;
+---
+
+<article class="client" aria-labelledby={titleId}>
+  <header class="client-head">
+    <div class="client-id">
+      <p class="meta-key client-meta">{String(index + 1).padStart(2, '0')} / {project.category}</p>
+      <h2 class="client-name" id={titleId}><a href={`/work/${project.slug}/`}>{project.client}</a></h2>
+    </div>
+    <ul class="client-tags" role="list" aria-label="In this set">
+      {tags.map((t) => <li class="meta-key">{t}</li>)}
+    </ul>
+  </header>
+
+  <div class:list={['collage', `collage--${layout}`]}>
+    {tiles.map((m, i) =>
+      m.kind === 'photo' ? (
+        <figure class="tile">
+          <div class="frame">
+            <Picture
+              src={m.image}
+              alt={m.alt}
+              formats={['avif', 'webp']}
+              widths={[320, 480, 640, 900]}
+              sizes="(min-width: 60em) 30vw, 50vw"
+              loading={eager && i === 0 ? 'eager' : 'lazy'}
+              fetchpriority={eager && i === 0 ? 'high' : 'auto'}
+            />
+          </div>
+        </figure>
+      ) : (
+        <figure class:list={['tile', 'tile--video', { 'tile--landscape': m.landscape }]} data-loop>
+          <div class="frame">
+            <video
+              muted
+              loop
+              playsinline
+              preload="none"
+              poster={m.posterSrc}
+              width={m.landscape ? 1276 : 720}
+              height={m.landscape ? 718 : 1280}
+              data-src={m.src}
+              aria-label={`${m.label} for ${project.client}, ${m.duration}, without sound`}
+            ></video>
+            <button class="loop-toggle is-paused" type="button" data-loop-toggle hidden aria-label={`Play ${m.label.toLowerCase()}`}>
+              <svg class="icon-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 3.5v9M10.5 3.5v9" /></svg>
+              <svg class="icon-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3.2v9.6L12.6 8z" /></svg>
+            </button>
+          </div>
+        </figure>
+      ),
+    )}
+  </div>
+</article>
+
+<script>
+  const tiles = [...document.querySelectorAll<HTMLElement>('[data-loop]')];
+  const quiet =
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+    (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true;
+
+  for (const tile of tiles) {
+    const video = tile.querySelector('video')!;
+    const button = tile.querySelector<HTMLButtonElement>('[data-loop-toggle]')!;
+    const noun = button.getAttribute('aria-label')!.replace(/^Play /, '');
+    button.hidden = false;
+    let wants = !quiet; // the visitor's choice wins once they press the button
+    let onScreen = false;
+
+    const load = () => {
+      if (!video.src) { video.src = video.dataset.src!; }
+    };
+    const render = () => {
+      button.classList.toggle('is-paused', video.paused);
+      button.setAttribute('aria-label', `${video.paused ? 'Play' : 'Pause'} ${noun}`);
+    };
+    const sync = () => {
+      if (wants && onScreen) { load(); video.play().catch(() => {}); }
+      else video.pause();
+    };
+
+    button.addEventListener('click', () => {
+      wants = video.paused;
+      if (wants) { load(); video.play().catch(() => {}); } else video.pause();
+    });
+    video.addEventListener('play', render);
+    video.addEventListener('pause', render);
+
+    new IntersectionObserver(
+      ([e]) => { onScreen = e.isIntersecting; sync(); },
+      { rootMargin: '150px 0px' },
+    ).observe(tile);
+  }
+</script>
+
+<style>
+
+  .client-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem 2rem;
+    padding-bottom: clamp(1rem, 2vw, 1.5rem);
+    margin-bottom: clamp(2.5rem, 2rem + 4vw, 6rem);
+    border-bottom: 1px solid color-mix(in srgb, var(--stone) 60%, transparent);
+  }
+  .client-id { display: grid; gap: 0.6rem; }
+  .client-meta { color: var(--graphite); }
+  .client-name {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(1.75rem, 1.2rem + 1.8vw, 3rem);
+    line-height: 1;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+  }
+  .client-name a { text-decoration: none; }
+  .client-name a:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.12em; }
+  .client-tags { display: flex; flex-wrap: wrap; gap: 0.4rem 1.25rem; }
+  .client-tags li { color: var(--graphite); }
+
+  .tile { margin: 0; }
+  .tile .frame { aspect-ratio: 9 / 16; }
+  .tile--landscape .frame { aspect-ratio: 16 / 9; }
+  .tile :global(img), .tile video { width: 100%; height: 100%; object-fit: cover; }
+  .tile video { background: var(--charcoal); }
+
+  .loop-toggle[hidden] { display: none; }
+  .loop-toggle {
+    position: absolute;
+    right: 0.6rem;
+    bottom: 0.6rem;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 1px solid rgb(245 240 232 / 0.35);
+    border-radius: 50%;
+    background: rgb(20 20 20 / 0.55);
+    color: var(--ivory);
+    backdrop-filter: blur(6px);
+  }
+  .loop-toggle svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+  .loop-toggle .icon-play { fill: currentColor; stroke: none; }
+  .loop-toggle.is-paused .icon-pause, .loop-toggle:not(.is-paused) .icon-play { display: none; }
+  .loop-toggle:hover { background: rgb(20 20 20 / 0.8); }
+
+  /* Phones and tablets: two staggered columns */
+  .collage { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(0.75rem, 2vw, 1.5rem); align-items: start; }
+  .collage > :nth-child(2n) { margin-top: clamp(2.5rem, 8vw, 5rem); }
+  .collage--single > .tile { grid-column: 1 / -1; margin-top: 0; }
+
+  /* Desktop: a 24-column field, each arrangement placed by hand after the references */
+  @media (min-width: 60em) {
+    .collage { grid-template-columns: repeat(24, minmax(0, 1fr)); column-gap: 1rem; row-gap: clamp(1.5rem, 2vw, 2rem); }
+    .collage > :nth-child(2n) { margin-top: 0; }
+
+    /* a: one large frame, two small beside it, a third below them */
+    .collage--a > :nth-child(1) { grid-column: 4 / span 7; grid-row: 1 / span 2; }
+    .collage--a > :nth-child(2) { grid-column: 12 / span 4; grid-row: 1; margin-top: 3rem; }
+    .collage--a > :nth-child(3) { grid-column: 17 / span 4; grid-row: 1; margin-top: 5.5rem; }
+    .collage--a > :nth-child(4) { grid-column: 15 / span 5; grid-row: 2; }
+
+    /* b: large centre frame, a small pair stacked left, a tall one right */
+    .collage--b > :nth-child(1) { grid-column: 9 / span 7; grid-row: 1 / span 2; }
+    .collage--b > :nth-child(2) { grid-column: 4 / span 4; grid-row: 1; margin-top: 4rem; }
+    .collage--b > :nth-child(3) { grid-column: 17 / span 6; grid-row: 1 / span 2; margin-top: 2.5rem; }
+    .collage--b > :nth-child(4) { grid-column: 5 / span 3; grid-row: 2; }
+
+    /* c: four across, heights stepping */
+    .collage--c > :nth-child(1) { grid-column: 2 / span 5; margin-top: 2.5rem; }
+    .collage--c > :nth-child(2) { grid-column: 8 / span 6; }
+    .collage--c > :nth-child(3) { grid-column: 15 / span 4; margin-top: 6rem; }
+    .collage--c > :nth-child(4) { grid-column: 20 / span 5; margin-top: 1.5rem; }
+
+    /* d: four across, the last dropping low */
+    .collage--d > :nth-child(1) { grid-column: 3 / span 4; margin-top: 8rem; }
+    .collage--d > :nth-child(2) { grid-column: 8 / span 5; margin-top: 8rem; }
+    .collage--d > :nth-child(3) { grid-column: 14 / span 6; }
+    .collage--d > :nth-child(4) { grid-column: 21 / span 4; margin-top: 18rem; }
+
+    .collage--pair > :nth-child(1) { grid-column: 6 / span 6; margin-top: 5rem; }
+    .collage--pair > :nth-child(2) { grid-column: 13 / span 7; }
+
+    .collage--single > .tile { grid-column: 4 / span 18; }
+  }
+</style>

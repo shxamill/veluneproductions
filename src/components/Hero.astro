@@ -39,7 +39,7 @@ const wideJpg = await getImage({ src: posterWide, width: 1276, format: 'jpg', qu
   <div class="reel frame rise rise--3" data-reel>
     <picture>
       <source media={PORTRAIT} srcset={tall.srcSet.attribute} sizes="100vw" type="image/webp" />
-      <source srcset={wide.srcSet.attribute} sizes="(min-width: 80em) 1280px, 100vw" type="image/webp" />
+      <source srcset={wide.srcSet.attribute} sizes="(min-width: 90em) 1440px, 100vw" type="image/webp" />
       <img
         src={wideJpg.src}
         width="1276"
@@ -60,11 +60,18 @@ const wideJpg = await getImage({ src: posterWide, width: 1276, format: 'jpg', qu
       <source src="/media/hero/showreel-16x9.webm" type={AV1} />
       <source src="/media/hero/showreel-16x9.mp4" type="video/mp4" />
     </template>
-    <button class="reel-toggle" type="button" data-reel-toggle hidden>
-      <svg class="icon-pause" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="2.5" width="3" height="11" /><rect x="9.5" y="2.5" width="3" height="11" /></svg>
-      <svg class="icon-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9.5-5.5z" /></svg>
-      <span class="reel-toggle-label">Play showreel</span>
-    </button>
+    <div class="reel-controls" data-reel-controls hidden>
+      <button class="reel-toggle" type="button" data-reel-sound aria-label="Turn sound on">
+        <svg class="icon-muted" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h2.5L8 3v10L4.5 10H2z" /><path class="stroke" d="M10.5 6l4 4M14.5 6l-4 4" /></svg>
+        <svg class="icon-sound" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h2.5L8 3v10L4.5 10H2z" /><path class="stroke" d="M10.5 5.5a3.5 3.5 0 0 1 0 5M12.5 3.5a6.3 6.3 0 0 1 0 9" /></svg>
+        <span class="reel-toggle-label" aria-hidden="true">Unmute</span>
+      </button>
+      <button class="reel-toggle" type="button" data-reel-toggle aria-label="Play showreel">
+        <svg class="icon-pause" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="2.5" width="3" height="11" /><rect x="9.5" y="2.5" width="3" height="11" /></svg>
+        <svg class="icon-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9.5-5.5z" /></svg>
+        <span class="reel-toggle-label" aria-hidden="true">Play</span>
+      </button>
+    </div>
   </div>
 </section>
 
@@ -72,9 +79,11 @@ const wideJpg = await getImage({ src: posterWide, width: 1276, format: 'jpg', qu
   const frame = document.querySelector<HTMLElement>('[data-reel]');
   const video = frame?.querySelector<HTMLVideoElement>('[data-reel-video]');
   const toggle = frame?.querySelector<HTMLButtonElement>('[data-reel-toggle]');
+  const sound = frame?.querySelector<HTMLButtonElement>('[data-reel-sound]');
 
-  if (frame && video && toggle) {
+  if (frame && video && toggle && sound) {
     const label = toggle.querySelector('.reel-toggle-label')!;
+    const soundLabel = sound.querySelector('.reel-toggle-label')!;
     const portrait = window.matchMedia('(max-width: 599px) and (orientation: portrait)');
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true;
@@ -85,7 +94,11 @@ const wideJpg = await getImage({ src: posterWide, width: 1276, format: 'jpg', qu
     // element state, so it reads "Pause" while a requested play is loading.
     const render = () => {
       frame.classList.toggle('is-paused', !wantsPlay);
-      label.textContent = wantsPlay ? 'Pause showreel' : 'Play showreel';
+      label.textContent = wantsPlay ? 'Pause' : 'Play';
+      toggle.setAttribute('aria-label', wantsPlay ? 'Pause showreel' : 'Play showreel');
+      frame.classList.toggle('is-unmuted', !video.muted);
+      soundLabel.textContent = video.muted ? 'Unmute' : 'Mute';
+      sound.setAttribute('aria-label', video.muted ? 'Turn sound on' : 'Turn sound off');
     };
 
     const sources = frame.querySelector<HTMLTemplateElement>('[data-reel-sources]')!;
@@ -106,7 +119,20 @@ const wideJpg = await getImage({ src: posterWide, width: 1276, format: 'jpg', qu
     video.addEventListener('pause', render);
     video.addEventListener('error', () => frame.classList.remove('is-live'), true);
 
-    toggle.hidden = false;
+    frame.querySelector<HTMLElement>('[data-reel-controls]')!.hidden = false;
+
+    // The reel always starts muted; sound only ever comes on from this click.
+    // Turning sound on also starts playback if the reel was paused.
+    sound.addEventListener('click', () => {
+      video.muted = !video.muted;
+      if (!video.muted && !wantsPlay) {
+        wantsPlay = true;
+        play();
+      }
+      render();
+    });
+    video.addEventListener('volumechange', render);
+
     toggle.addEventListener('click', () => {
       wantsPlay = !wantsPlay;
       render();
@@ -173,10 +199,15 @@ const wideJpg = await getImage({ src: posterWide, width: 1276, format: 'jpg', qu
   .reel video { opacity: 0; transition: opacity 600ms var(--ease); }
   .reel.is-live video { opacity: 1; }
 
-  .reel-toggle {
+  .reel-controls {
     position: absolute;
     right: clamp(0.75rem, 2vw, 1.25rem);
     bottom: clamp(0.75rem, 2vw, 1.25rem);
+    display: flex;
+    gap: 0.5rem;
+  }
+  .reel-controls[hidden] { display: none; }
+  .reel-toggle {
     display: inline-flex;
     align-items: center;
     gap: 0.55rem;
@@ -190,10 +221,15 @@ const wideJpg = await getImage({ src: posterWide, width: 1276, format: 'jpg', qu
     font-weight: 700;
     backdrop-filter: blur(6px);
   }
-  .reel-toggle[hidden] { display: none; }
   .reel-toggle:hover { background: var(--charcoal); }
-  .reel-toggle svg { width: 14px; height: 14px; fill: currentColor; }
-  .reel .icon-play { display: none; }
-  .reel.is-paused .icon-play { display: block; }
-  .reel.is-paused .icon-pause { display: none; }
+  .reel-toggle svg { width: 16px; height: 16px; fill: currentColor; }
+  .reel-toggle svg .stroke { fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; }
+  .reel .icon-play, .reel .icon-sound { display: none; }
+  .reel.is-paused .icon-play, .reel.is-unmuted .icon-sound { display: block; }
+  .reel.is-paused .icon-pause, .reel.is-unmuted .icon-muted { display: none; }
+  /* Narrow phones: icon-only controls (each keeps its accessible label) */
+  @media (max-width: 30em) {
+    .reel-toggle { padding: 0.5rem; min-width: 2.75rem; justify-content: center; }
+    .reel-toggle-label { display: none; }
+  }
 </style>

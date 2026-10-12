@@ -1,0 +1,190 @@
+---
+import type { ImageMetadata } from 'astro';
+import { Picture } from 'astro:assets';
+import { processSteps } from '../data/process';
+import { projects } from '../data/work';
+
+// Home-page version of "How we think": the three steps beside a frame that
+// shows a real client still for the step currently in view. The step nearest
+// the middle of the screen (or the one hovered) is the current one.
+// Without JS: every step reads normally and the frame shows the first still.
+const images = import.meta.glob<{ default: ImageMetadata }>('/src/assets/work/*/*.jpg', { eager: true });
+const steps = processSteps.map((s) => ({
+  ...s,
+  image: images[`/src/assets/work/${s.still.slug}/${s.still.file}.jpg`].default,
+  client: projects.find((p) => p.slug === s.still.slug)!,
+}));
+---
+
+<div class="showcase" data-showcase>
+  <div class="showcase-head">
+    <h2 id="process-title" class="voice showcase-title">
+      <span>How we think,</span>
+      <span class="voice-2">from brief to final delivery.</span>
+    </h2>
+    <a class="btn btn--light" href="/contact/">Start a project</a>
+  </div>
+
+  <ol class="steps" role="list">
+    {steps.map((s, i) => (
+      <li class:list={['step', { 'is-current': i === 0 }]} data-step={i}>
+        <span class="step-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+        <h3 class="step-name">{s.name}</h3>
+        <p class="step-words">{s.words.join(', ')}.</p>
+        <div class="frame step-thumb" aria-hidden="true">
+          <Picture src={s.image} alt="" formats={['avif', 'webp']} widths={[160, 240]} sizes="5rem" />
+        </div>
+      </li>
+    ))}
+  </ol>
+
+  <figure class="stage" aria-live="off">
+    <div class="frame stage-frame">
+      {steps.map((s, i) => (
+        <Picture
+          src={s.image}
+          alt={s.still.alt}
+          formats={['avif', 'webp']}
+          widths={[400, 640, 900]}
+          sizes="(min-width: 60em) 30vw, 0px"
+          class:list={['stage-img', { 'is-current': i === 0 }]}
+          data-stage={i}
+        />
+      ))}
+    </div>
+    <figcaption>
+      {steps.map((s, i) => (
+        <a href={`/work/${s.client.slug}/`} class:list={['stage-caption', { 'is-current': i === 0 }]} data-caption={i}>
+          {s.name}: {s.client.client}, {s.client.category.toLowerCase()}
+        </a>
+      ))}
+    </figcaption>
+  </figure>
+</div>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-showcase]');
+  if (root) {
+    const steps = [...root.querySelectorAll<HTMLElement>('[data-step]')];
+    const pictures = [...root.querySelectorAll<HTMLElement>('[data-stage]')];
+    const captions = [...root.querySelectorAll<HTMLElement>('[data-caption]')];
+    let current = 0;
+
+    const show = (i: number) => {
+      if (i === current) return;
+      current = i;
+      steps.forEach((el, j) => el.classList.toggle('is-current', j === i));
+      pictures.forEach((el, j) => el.classList.toggle('is-current', j === i));
+      captions.forEach((el, j) => el.classList.toggle('is-current', j === i));
+    };
+
+    // Scroll-driven: the step crossing the middle band of the screen is current.
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) if (e.isIntersecting) show(Number((e.target as HTMLElement).dataset.step));
+      },
+      { rootMargin: '-45% 0px -45% 0px' },
+    );
+    steps.forEach((el) => io.observe(el));
+
+    // Pointer: hovering a step shows its still.
+    steps.forEach((el) => el.addEventListener('pointerenter', () => show(Number(el.dataset.step))));
+
+    root.classList.add('is-enhanced');
+  }
+</script>
+
+<style>
+  .showcase {
+    display: grid;
+    gap: clamp(2.5rem, 5vw, 4rem) 2rem;
+  }
+  .showcase-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1.5rem 2rem;
+  }
+  .showcase-title { font-size: clamp(2.25rem, 1.3rem + 3.2vw, 4.25rem); }
+
+  /* --- Steps ------------------------------------------------------------- */
+  .steps { display: grid; align-content: start; }
+  .step {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+    grid-template-areas: 'num name thumb' 'num words thumb';
+    gap: 0.25rem 1rem;
+    align-items: baseline;
+    padding-block: clamp(1.25rem, 2.6vw, 2.25rem);
+    border-top: 1px solid #3a3835;
+  }
+  .step:last-child { border-bottom: 1px solid #3a3835; }
+  .step-num { grid-area: num; font-size: var(--t-small); color: var(--stone); font-variant-numeric: tabular-nums; }
+  .step-name {
+    grid-area: name;
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(2.25rem, 1.4rem + 3vw, 4.5rem);
+    line-height: 1.02;
+    letter-spacing: -0.015em;
+  }
+  .step-words { grid-area: words; color: var(--stone); }
+  .step-thumb { grid-area: thumb; align-self: center; width: 4.5rem; aspect-ratio: 4 / 5; }
+  .step-thumb :global(img) { width: 100%; height: 100%; object-fit: cover; }
+
+  /* The current step: a rule draws across its top edge, the rest recede a little */
+  .step::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -1px;
+    height: 1px;
+    background: var(--ivory);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 700ms var(--ease);
+  }
+  .is-enhanced .step.is-current::before { transform: scaleX(1); }
+  .step-name, .step-num { transition: color 400ms var(--ease), transform 400ms var(--ease); }
+  .is-enhanced .step:not(.is-current) .step-name { color: var(--stone); }
+  .is-enhanced .step.is-current .step-num { color: var(--ivory); }
+
+  /* --- Stage (desktop only) ---------------------------------------------- */
+  .stage { display: none; margin: 0; }
+
+  @media (min-width: 48em) {
+    .step { grid-template-columns: 3.5rem minmax(0, 1fr) minmax(0, 1fr) auto; grid-template-areas: 'num name words thumb'; }
+  }
+
+  @media (min-width: 60em) {
+    .showcase { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+    .showcase-head { grid-column: 1 / -1; }
+    .steps { grid-column: 1 / span 7; }
+    .step { grid-template-columns: 3.5rem minmax(0, 1fr) minmax(0, 0.9fr); grid-template-areas: 'num name words'; }
+    .step-thumb { display: none; }
+
+    .stage { display: grid; gap: 0.85rem; grid-column: 9 / -1; align-self: start; position: sticky; top: 2rem; }
+    .stage-frame { aspect-ratio: 4 / 5; }
+    .stage-frame :global(img.stage-img) {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; object-position: 50% 30%;
+      opacity: 0; transition: opacity 600ms var(--ease);
+    }
+    .stage-frame :global(img.stage-img.is-current) { opacity: 1; }
+    figcaption { position: relative; min-height: 1.6em; font-size: var(--t-small); }
+    .stage-caption {
+      position: absolute;
+      inset: 0 auto auto 0;
+      color: var(--stone);
+      text-decoration: none;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 400ms var(--ease), visibility 0s linear 400ms;
+    }
+    .stage-caption.is-current { opacity: 1; visibility: visible; transition: opacity 400ms var(--ease); }
+    .stage-caption:hover { color: var(--ivory); text-decoration: underline; text-underline-offset: 0.3em; }
+  }
+</style>

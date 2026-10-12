@@ -1,13 +1,18 @@
 ---
+import { Picture } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Hero from '../components/Hero.astro';
 import ProjectCard from '../components/ProjectCard.astro';
-import Process from '../components/Process.astro';
+import ProcessShowcase from '../components/ProcessShowcase.astro';
 import ServicePanels from '../components/ServicePanels.astro';
 import Faq from '../components/Faq.astro';
 import { featured, projects } from '../data/work';
 
 const [a, b, c, d] = featured;
+// The studio section shows two real projects that aren't among the four
+// featured cards below, so it introduces the work without repeating it.
+const portrait = projects.find((p) => p.slug === 'yash-jain')!;
+const landscape = projects.find((p) => p.slug === 'nomi-kids-culture')!;
 ---
 
 <Base
@@ -18,10 +23,24 @@ const [a, b, c, d] = featured;
   <Hero />
 
   <section class="band band--soft" aria-labelledby="studio-title">
-    <div class="wrap split">
-      <h2 id="studio-title" class="section-label">The studio</h2>
+    <div class="wrap studio">
+      <div class="studio-media">
+        <a class="still still--portrait" href={`/work/${portrait.slug}/`}>
+          <div class="frame">
+            <Picture src={portrait.cover} alt={portrait.coverAlt} formats={['avif', 'webp']} widths={[360, 560, 800]} sizes="(min-width: 60em) 28vw, 70vw" />
+          </div>
+          <span class="still-caption">{portrait.client}, {portrait.category.toLowerCase()}</span>
+        </a>
+        <a class="still still--landscape" href={`/work/${landscape.slug}/`}>
+          <div class="frame">
+            <Picture src={landscape.cover} alt={landscape.coverAlt} formats={['avif', 'webp']} widths={[360, 560, 800]} sizes="(min-width: 60em) 24vw, 60vw" />
+          </div>
+          <span class="still-caption">{landscape.client}, {landscape.category.toLowerCase()}</span>
+        </a>
+      </div>
       <div class="intro">
-        <p class="statement">Velune is a creative studio built for brands that want to be seen, remembered, and talked about.</p>
+        <h2 id="studio-title" class="section-label">The studio</h2>
+        <p class="statement studio-statement">Velune is a creative studio built for brands that want to be seen, remembered, and talked about.</p>
         <p class="lede">
           We bring together visual storytelling, content creation, video production and digital marketing to help brands
           build a stronger presence in the digital world. From a single reel to a complete campaign, we turn ideas into
@@ -50,13 +69,9 @@ const [a, b, c, d] = featured;
     </div>
   </section>
 
-  <section class="band band--soft" aria-labelledby="process-title">
-    <div class="wrap split">
-      <div class="process-side">
-        <h2 id="process-title" class="section-label">How we think</h2>
-        <a class="btn btn--dark" href="/contact/">Start a project</a>
-      </div>
-      <Process />
+  <section class="band band--dark" aria-labelledby="process-title">
+    <div class="wrap">
+      <ProcessShowcase />
     </div>
   </section>
 
@@ -87,7 +102,39 @@ const [a, b, c, d] = featured;
 </Base>
 
 <style>
-  .intro { display: grid; gap: 1.75rem; justify-items: start; }
+  /* --- The studio: real stills on the left, the studio's words on the right --- */
+  .studio { display: grid; gap: clamp(3rem, 6vw, 4rem) 2rem; align-items: center; }
+  .intro { display: grid; gap: 1.5rem; justify-items: start; }
+  .studio-statement { font-size: clamp(1.75rem, 1.1rem + 2.2vw, 3.25rem); line-height: 1.14; max-width: 22ch; }
+
+  .studio-media { position: relative; padding-bottom: clamp(3rem, 8vw, 6rem); }
+  .still { display: grid; gap: 0.6rem; text-decoration: none; }
+  .still .frame :global(img) { width: 100%; height: 100%; object-fit: cover; transition: transform 900ms var(--ease); }
+  .still--portrait { width: 68%; }
+  .still--portrait .frame { aspect-ratio: 4 / 5; }
+  /* The landscape frame overlaps the portrait's lower corner, cut out by a
+     band-coloured border so the two read as a laid-out spread */
+  .still--landscape { position: absolute; right: 0; bottom: 0; width: 58%; }
+  .still--landscape .frame { aspect-ratio: 16 / 9; outline: clamp(6px, 0.8vw, 10px) solid var(--ivory); }
+  .still-caption { font-size: var(--t-small); color: var(--graphite); }
+  .still--landscape .still-caption { text-align: right; }
+  /* Keep the portrait's caption clear of the overlapping landscape frame */
+  .still--portrait .still-caption { max-width: 58%; }
+  @media (hover: hover) and (pointer: fine) {
+    .still:hover .frame :global(img) { transform: scale(1.04); }
+    .still:hover .still-caption { color: var(--charcoal); text-decoration: underline; text-underline-offset: 0.3em; }
+  }
+  .still:focus-visible { outline-offset: 6px; }
+
+  @media (min-width: 60em) {
+    .studio { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+    .studio-media { grid-column: 1 / span 6; }
+    .intro { grid-column: 8 / -1; }
+  }
+  @media (max-width: 59.99em) {
+    /* Words first on narrow screens, then the stills */
+    .intro { order: -1; }
+  }
 
   .section-head {
     display: flex;
@@ -107,13 +154,6 @@ const [a, b, c, d] = featured;
     .work-grid > :global(:nth-child(2)) { margin-top: clamp(4rem, 10vw, 9rem); }
   }
 
-  .process-side { display: grid; gap: 1.5rem; align-content: space-between; justify-items: start; }
-  @media (min-width: 60em) { .process-side { min-height: 100%; } }
-  @media (max-width: 59.99em) {
-    /* Label, then steps, then the button */
-    .process-side { display: contents; }
-    .process-side .btn { order: 2; justify-self: start; }
-  }
 
   .faq-title { font-size: clamp(2rem, 1.3rem + 2.6vw, 3.5rem); }
 </style>

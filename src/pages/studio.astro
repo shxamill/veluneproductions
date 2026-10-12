@@ -2,13 +2,14 @@
 import { Picture } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import PageHead from '../components/PageHead.astro';
-import Process from '../components/Process.astro';
-import { projects } from '../data/work';
+import ProcessShowcase from '../components/ProcessShowcase.astro';
+import ClientMarquee from '../components/ClientMarquee.astro';
+import { projects, type Photo } from '../data/work';
 
-// Client roster as listed in Velune's own showreel and the brand book (p.16).
-const featuredNames = projects.map((p) => p.client);
-const others = ['Shruthi', 'Trisha', 'Greeshma Prasanna', 'Ashwini Gowda', 'Bhargavi Vikyathi', 'Vajraraj Jewellery', 'Al Mariyam', 'Harshitha', 'Avrathan', 'Monika Reddy'];
+// Stilat's cover (the horseback shot) is the Capture still in "How we think"
+// below, so this page opens on the other Stilat photograph.
 const stilat = projects.find((p) => p.slug === 'stilat')!;
+const stilatStill = stilat.media.find((m): m is Photo => m.kind === 'photo' && m.image !== stilat.cover)!;
 const lakshi = projects.find((p) => p.slug === 'lakshi-lingaraju')!;
 ---
 
@@ -38,7 +39,7 @@ const lakshi = projects.find((p) => p.slug === 'lakshi-lingaraju')!;
     </div>
     <div class="story-images">
       <figure class="frame">
-        <Picture src={stilat.cover} alt={stilat.coverAlt} formats={['avif', 'webp']} widths={[400, 700, 1000]} sizes="(min-width: 60em) 28vw, 50vw" loading="eager" />
+        <Picture src={stilatStill.image} alt={stilatStill.alt} formats={['avif', 'webp']} widths={[400, 700, 1000]} sizes="(min-width: 60em) 28vw, 50vw" loading="eager" />
       </figure>
       <figure class="frame">
         <Picture src={lakshi.cover} alt={lakshi.coverAlt} formats={['avif', 'webp']} widths={[400, 700, 1000]} sizes="(min-width: 60em) 28vw, 50vw" />
@@ -46,25 +47,21 @@ const lakshi = projects.find((p) => p.slug === 'lakshi-lingaraju')!;
     </div>
   </section>
 
-  <section class="band band--soft" aria-labelledby="think-title">
-    <div class="wrap split">
-      <h2 id="think-title" class="section-label">How we think</h2>
-      <Process />
+  <section class="band band--dark" aria-labelledby="process-title">
+    <div class="wrap">
+      <ProcessShowcase />
     </div>
   </section>
 
-  <section class="band" aria-labelledby="clients-title">
-    <div class="wrap split">
-      <h2 id="clients-title" class="section-label">Clients</h2>
-      <div class="clients">
-        <p class="statement">People and brands Velune has worked with.</p>
-        <ul class="client-list" role="list">
-          {featuredNames.map((n) => <li><strong>{n}</strong></li>)}
-          {others.map((n) => <li>{n}</li>)}
-        </ul>
-        <a class="btn btn--dark" href="/work/">See selected work</a>
-      </div>
+  <section class="band clients-band" aria-labelledby="clients-title">
+    <div class="wrap clients-head">
+      <h2 id="clients-title" class="voice">
+        <span>People and brands</span>
+        <span class="voice-2">Velune has worked with.</span>
+      </h2>
+      <a class="btn btn--dark" href="/work/">See selected work</a>
     </div>
+    <ClientMarquee />
   </section>
 </Base>
 
@@ -91,13 +88,12 @@ const lakshi = projects.find((p) => p.slug === 'lakshi-lingaraju')!;
   .story-images .frame:nth-child(2) { margin-top: 4rem; }
   .story-images :global(img) { width: 100%; height: 100%; object-fit: cover; }
 
-  .clients { display: grid; gap: 2rem; justify-items: start; }
-  .client-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
-    width: 100%;
-    border-top: 1px solid var(--stone);
+  .clients-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1.5rem 2rem;
+    margin-bottom: clamp(2.5rem, 5vw, 4.5rem);
   }
-  .client-list li { padding-block: 0.9rem; border-bottom: 1px solid color-mix(in srgb, var(--stone) 55%, transparent); }
-  .client-list strong { font-weight: 700; }
 </style>

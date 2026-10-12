@@ -16,7 +16,8 @@ mkdir -p "$PUB/hero" "$AST/hero" "$AST/brand"
 
 # --- Hero showreel --------------------------------------------------------
 # The first 0.8 s of both reels is a flat grey frame; it is trimmed so the
-# loop does not flash grey. Audio is dropped: the hero always plays muted.
+# loop does not flash grey. The soundtrack is kept: the reel starts muted
+# and visitors can turn sound on with the hero's sound button.
 HERO="$SRC/Hero media"
 # The source is already ~1 Mbps, so H.264 is capped near that rate (an
 # uncapped CRF encode came out larger than the original). AV1 is offered
@@ -24,13 +25,15 @@ HERO="$SRC/Hero media"
 for v in 16x9 9x16; do
   out="$PUB/hero/showreel-$v.mp4"
   if need "$out"; then
-    ffmpeg -v error -y -ss 0.8 -i "$HERO/Velune-showreel-$v.MP4" -an \
+    ffmpeg -v error -y -ss 0.8 -i "$HERO/Velune-showreel-$v.MP4" \
+      -c:a aac -b:a 128k \
       -c:v libx264 -preset slow -crf 26 -maxrate 1100k -bufsize 2200k \
       -pix_fmt yuv420p -profile:v high -movflags +faststart "$out"
   fi
   out="$PUB/hero/showreel-$v.webm"
   if need "$out"; then
-    ffmpeg -v error -y -ss 0.8 -i "$HERO/Velune-showreel-$v.MP4" -an \
+    ffmpeg -v error -y -ss 0.8 -i "$HERO/Velune-showreel-$v.MP4" \
+      -c:a libopus -b:a 112k \
       -c:v libsvtav1 -preset 5 -crf 38 -pix_fmt yuv420p -svtav1-params enable-overlays=1 "$out" 2>/dev/null
   fi
 done
