@@ -1,0 +1,39 @@
+name: Bug report
+description: Report a reproducible website or deployment issue.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: "Search existing issues first. Do not upload private client assets, secrets, or personal information."
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Explain the expected and actual behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+    validations:
+      required: false
+  - type: input
+    id: viewport
+    attributes:
+      label: Viewport size
+    validations:
+      required: false
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshot or logs
+      description: Redact credentials and private client information.
+    validations:
+      required: false
