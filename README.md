@@ -1,5 +1,9 @@
 # Velune Creative Studio — website
 
+[![CI](https://github.com/shxamill/veluneproductions/actions/workflows/ci.yml/badge.svg)](https://github.com/shxamill/veluneproductions/actions/workflows/ci.yml) [![License: All rights reserved](https://img.shields.io/badge/License-All%20rights%20reserved-lightgrey.svg)](LICENSE) [![Live site](https://img.shields.io/badge/Live-www.veluneproductions.com-black?logo=vercel)](https://www.veluneproductions.com)
+
+![Homepage screenshot](docs/screenshot.jpg)
+
 Static Astro site for Velune Creative Studio: home, selected work (6 project pages), services, studio, contact and 404.
 
 ## Run it
@@ -68,3 +72,7 @@ The CI workflow runs the production build on pushes and pull requests. Dependabo
 ## Rights and licensing
 
 No repository-level open-source license is currently provided. The site contains client names, project media, and Velune brand assets; verify public-use permission for each asset before publishing or redistributing it. Public repository visibility does not grant reuse rights.
+
+## License and asset rights
+
+All rights reserved. The code is public for portfolio viewing only and is not open source; see [LICENSE](LICENSE). The Velune name, logo and brand identity belong to Velune Creative Studio. Photographs, videos and other client work belong to Velune Creative Studio and/or the respective clients and may not be reused.
