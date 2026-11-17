@@ -57,3 +57,14 @@ Uses the installed Google Chrome over the DevTools Protocol (no npm dependencies
 - Confirm "Brand film" as the category label for Nomi Kids Culture.
 - Supply a vector logo (the current one is derived from the 640 px JPEG) and, ideally, a dedicated favicon mark.
 - Optional: a higher-resolution 16:9 showreel master (the current one is 1276×718).
+
+
+## Repository maintenance
+
+Contribution, security, and support expectations are documented in [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), and [SUPPORT.md](SUPPORT.md). Bug reports, feature requests, and pull requests use the templates under .github/.
+
+The CI workflow runs the production build on pushes and pull requests. Dependabot checks npm dependencies weekly.
+
+## Rights and licensing
+
+No repository-level open-source license is currently provided. The site contains client names, project media, and Velune brand assets; verify public-use permission for each asset before publishing or redistributing it. Public repository visibility does not grant reuse rights.
