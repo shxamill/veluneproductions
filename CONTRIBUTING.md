@@ -4,7 +4,7 @@ This repository contains the Velune Creative Studio website built with Astro.
 
 ## Local setup
 
-Requirements: Node.js 22.12 or later.
+Requirements: Node.js 22.23.4 or later (Node 24 LTS recommended).
 
 ~~~bash
 npm ci

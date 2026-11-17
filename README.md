@@ -15,7 +15,7 @@ npm run build      # static output in dist/
 npm run preview    # serve dist/ at http://localhost:4321
 ```
 
-Node 22.12+ is required (Astro 7).
+Node 22.23.4+ is required by Astro 7.4; Node 24 LTS is recommended and is what CI and Vercel use.
 
 ## Media
 
